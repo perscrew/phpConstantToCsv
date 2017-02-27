@@ -6,26 +6,31 @@ require "csv"
 REGEXPS = [/\("(.*)","(.*)\)/, /\('(.*)','(.*)\)/]
 
 def process_files(files)
-  csv_rows = []
   #iterate over argv files
-  File.open(ARGV[0], "r:UTF-8").each do |line| 
-	  #puts("processing line : #{line}")
-	  # iterate over regexps
-	  REGEXPS.each do |regexp|
-	    #puts("trying regexp : #{regexp}")
-	    # match php constants
-	    matchdata = line.match(regexp)
-	    if matchdata && matchdata.length > 0 then
-		  key, value = matchdata.captures
-		  row = [clean_word(key), clean_word(value)]
-		  puts("matchdata succeed : #{row}")
-		  csv_rows.push(row)
-		  break
-		end
+  files.each do |file|
+	  if File.exists?(file) then
+	      csv_rows = []
+		  File.open(file, "r:UTF-8").each do |line| 
+			  #puts("processing line : #{line}")
+			  # iterate over regexps
+			  REGEXPS.each do |regexp|
+				#puts("trying regexp : #{regexp}")
+				# match php constants
+				matchdata = line.match(regexp)
+				if matchdata && matchdata.length > 0 then
+				  key, value = matchdata.captures
+				  row = [clean_word(key), clean_word(value)]
+				  puts("matchdata succeed : #{row}")
+				  csv_rows.push(row)
+				  break
+				end
+			  end	
+		  end
+		  # generate csv file
+		  generate_csv({"csv" => csv_rows, "file_name" => file})
 	  end	
   end
-  # generate csv file
-  generate_csv({"csv" => csv_rows, "file_name" => ARGV[0]})
+  
 end
 
 def clean_word(word)
